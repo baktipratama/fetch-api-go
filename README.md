@@ -2,7 +2,7 @@
 This is a simple go application with a rest API
 
 #### Requirements
-Java
+golang
 
 #### Run
 `go run main.go` or `./goapi` (linux) 

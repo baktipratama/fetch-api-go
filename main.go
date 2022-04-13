@@ -80,9 +80,10 @@ func handleRequests() {
 
 func getAllReviews(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: get all reviews")
-	params := mux.Vars(r)
-	limit := params["limit"]
+	limit := r.URL.Query()["limit"][0]
 	limit_int, err := strconv.Atoi(limit)
+
+	fmt.Println(limit)
 
 	reviews := []Review_data{}
 	var query = db.Table("reviews")
@@ -109,8 +110,9 @@ func getAllReviews(w http.ResponseWriter, r *http.Request) {
 
 func getReviewByScore(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: get all reviews")
-	params := mux.Vars(r)
-	score := params["score"]
+	score := r.URL.Query()["score"][0]
+
+	fmt.Println(score)
 
 	reviews := []Review_data{}
 	var query = db.Table("reviews")

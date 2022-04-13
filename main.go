@@ -26,13 +26,13 @@ type Result struct {
 }
 
 type Review_data struct {
-	Reviewid  string `json:"reviewid"`
-	Title string `json:"title"`
-	Url  string `json:"url"`
-	Score string `json:"score"`
-	Artists string `json:"artists"`
-	Genres string `json:"genres"`
-	Labels string `json:"labels"`
+	Reviewid string `json:"reviewid"`
+	Title    string `json:"title"`
+	Url      string `json:"url"`
+	Score    string `json:"score"`
+	Artists  string `json:"artists"`
+	Genres   string `json:"genres"`
+	Labels   string `json:"labels"`
 	Pub_year string `json:"pub_year"`
 	Content  string `json:"content"`
 }
@@ -72,36 +72,16 @@ func handleRequests() {
 		w.Write(response)
 	})
 
-	myRouter.HandleFunc("/test", testController).Methods("GET")
-	myRouter.HandleFunc("/api/reviews", getAllReviews).Methods("POST")
-	myRouter.HandleFunc("/api/reviews_by_score", getReviewByScore).Methods("POST")
+	myRouter.HandleFunc("/api/reviews", getAllReviews).Methods("GET")
+	myRouter.HandleFunc("/api/reviews_by_score", getReviewByScore).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":9999", myRouter))
 }
 
-func testController(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	fib := fibbonaci(100)
-	resp := Response{Data: fib}
-	json.NewEncoder(w).Encode(resp)
-}
-
-func fibbonaci(n int) int64 {
-	f := make([]int64, n+1, n+2)
-	if n < 2 {
-		f = f[0:2]
-	}
-	f[0] = 0
-	f[1] = 1
-	for i := 2; i <= n; i++ {
-		f[i] = f[i-1] + f[i-2]
-	}
-	return f[n]
-}
-
 func getAllReviews(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: get all reviews")
-	limit := r.FormValue("limit")
+	params := mux.Vars(r)
+	limit := params["limit"]
 	limit_int, err := strconv.Atoi(limit)
 
 	reviews := []Review_data{}
@@ -129,7 +109,8 @@ func getAllReviews(w http.ResponseWriter, r *http.Request) {
 
 func getReviewByScore(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Endpoint hit: get all reviews")
-	score := r.FormValue("score")
+	params := mux.Vars(r)
+	score := params["score"]
 
 	reviews := []Review_data{}
 	var query = db.Table("reviews")

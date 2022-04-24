@@ -87,12 +87,7 @@ func getAllReviews(w http.ResponseWriter, r *http.Request) {
 
 	reviews := []Review_data{}
 	var query = db.Table("reviews")
-	query.Select("reviews.reviewid, reviews.title, reviews.url, reviews.score, (SELECT GROUP_CONCAT(artists.artist)) as artists, (SELECT GROUP_CONCAT(genres.genre)) as genres, (SELECT GROUP_CONCAT(labels.label)) as labels, reviews.pub_year, content.content")
-	query.Joins("join labels on labels.reviewid = reviews.reviewid")
-	query.Joins("join artists on artists.reviewid = reviews.reviewid")
-	query.Joins("join content on content.reviewid = reviews.reviewid")
-	query.Joins("join genres on genres.reviewid = reviews.reviewid")
-	query.Group("reviews.reviewid")
+	query.Select("reviews.reviewid, reviews.title, reviews.url, reviews.score, reviews.pub_year")
 	query.Limit(limit_int)
 	query.Scan(&reviews)
 
@@ -116,13 +111,8 @@ func getReviewByScore(w http.ResponseWriter, r *http.Request) {
 
 	reviews := []Review_data{}
 	var query = db.Table("reviews")
-	query.Select("reviews.reviewid, reviews.title, reviews.url, reviews.score, (SELECT GROUP_CONCAT(artists.artist)) as artists, (SELECT GROUP_CONCAT(genres.genre)) as genres, (SELECT GROUP_CONCAT(labels.label)) as labels, reviews.pub_year, content.content")
-	query.Joins("join labels on labels.reviewid = reviews.reviewid")
-	query.Joins("join artists on artists.reviewid = reviews.reviewid")
-	query.Joins("join content on content.reviewid = reviews.reviewid")
-	query.Joins("join genres on genres.reviewid = reviews.reviewid")
+	query.Select("reviews.reviewid, reviews.title, reviews.url, reviews.score, reviews.pub_year")
 	query.Where("score >= ?", score)
-	query.Group("reviews.reviewid")
 	query.Scan(&reviews)
 
 	res := Result{Code: 200, Data: reviews, Message: "Success get reviews"}

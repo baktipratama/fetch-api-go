@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"gorm.io/driver/sqlite"
@@ -72,47 +71,24 @@ func handleRequests() {
 		w.Write(response)
 	})
 
-	myRouter.HandleFunc("/api/reviews", getAllReviews).Methods("GET")
-	myRouter.HandleFunc("/api/reviews_by_score", getReviewByScore).Methods("GET")
+	myRouter.HandleFunc("/reviews_by_score", getReviewByScore).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":9999", myRouter))
 }
 
-func getAllReviews(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint hit: get all reviews")
-	limit := r.URL.Query()["limit"][0]
-	limit_int, err := strconv.Atoi(limit)
-
-	fmt.Println(limit)
-
-	reviews := []Review_data{}
-	var query = db.Table("reviews")
-	query.Select("reviews.reviewid, reviews.title, reviews.url, reviews.score, reviews.pub_year")
-	query.Limit(limit_int)
-	query.Scan(&reviews)
-
-	res := Result{Code: 200, Data: reviews, Message: "Success get reviews"}
-	results, err := json.Marshal(res)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(results)
-}
-
 func getReviewByScore(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Endpoint hit: get all reviews")
+	fmt.Println("Endpoint hit: getReviewByScore")
 	score := r.URL.Query()["score"][0]
 
-	fmt.Println(score)
-
 	reviews := []Review_data{}
 	var query = db.Table("reviews")
-	query.Select("reviews.reviewid, reviews.title, reviews.url, reviews.score, reviews.pub_year")
+	query.Select("reviews.reviewid, reviews.title, reviews.url, reviews.score, (SELECT GROUP_CONCAT(artists.artist)) as artists, (SELECT GROUP_CONCAT(genres.genre)) as genres, (SELECT GROUP_CONCAT(labels.label)) as labels, reviews.pub_year")
+	query.Joins("join labels on labels.reviewid = reviews.reviewid")
+	query.Joins("join artists on artists.reviewid = reviews.reviewid")
+	query.Joins("join genres on genres.reviewid = reviews.reviewid")
 	query.Where("score >= ?", score)
+	query.Group("reviews.reviewid")
+	query.Limit(10)
 	query.Scan(&reviews)
 
 	res := Result{Code: 200, Data: reviews, Message: "Success get reviews"}
